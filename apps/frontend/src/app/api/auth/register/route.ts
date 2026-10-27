@@ -8,9 +8,6 @@ export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
 
-        console.log("INFO: ")
-        console.log(body)
-
         if (registreSchema.safeParse(body).success === false) {
             return errorResponse(
                 'Dados de entrada inválidos.',

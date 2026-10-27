@@ -6,7 +6,7 @@ import { NavItem, NucleoItem } from '@yawara/types';
 export const HEADER_LINKS: NavItem[] = [
   { label: 'Quem Somos', href: '/aboutUs' }, //
   { label: 'Sustentabilidade', href: '/sustainability' }, //
-  { label: 'Inovação', href: '/innovation' }, //
+  { label: 'Inovação', href: '/innovations' }, //
   { label: 'Transparência', href: '/transparency' }, //
   { label: 'Patrocinadores', href: '/sponsors' }, //
   { label: 'Processo Seletivo', href: '/selection-process' }, //
@@ -18,13 +18,13 @@ export const HEADER_LINKS: NavItem[] = [
 export const FOOTER_LINKS: NavItem[] = [
   { label: 'Quem Somos', href: '/aboutUs' }, //
   { label: 'Sustentabilidade', href: '/sustainability' }, //
-  { label: 'Contate-nos', href: '/contactUs' }, //
+  { label: 'Contate-nos', href: '/sponsors#be' }, //
   { label: 'Transparência', href: '/transparency' }, //
-  { label: 'Nossa Equipe', href: '/ourTeam' }, //
+  { label: 'Nossa Equipe', href: '/aboutUs' }, //
   { label: 'Cadastro', href: '/registre' }, //
-  { label: 'Validar documento', href: '/docs/validate' }, //
+  { label: 'Certificados', href: '/docs/certificate' }, //
   { label: 'Yawara na mídia', href: '/media' }, //
-  { label: 'Documento Importantes', href: '/docs' }, //
+  { label: 'Documento', href: '/docs' }, //
   { label: 'UFGD', href: 'https://ufgd.edu.br', isExternal: true }, //
 ];
 

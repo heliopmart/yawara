@@ -1,4 +1,4 @@
-import { getRows, insertRow, updateRow } from '@/utils/bd'
+import { getRows, insertRow, updateRow, callRpc } from '@/utils/bd'
 import { supabaseAdmin, create_rls_client } from '@/lib/db'
 import { AuthServiceLoginCredentials, AuthRespositoryUserDataByEmail, AuthRespositoryInsertData, TokenPayload } from '@yawara/types';
 
@@ -17,16 +17,24 @@ export class AuthRepository {
     static async getUserByEmail(email: AuthServiceLoginCredentials['email']): Promise<AuthRespositoryUserDataByEmail | null> {
         try {
             const bd = supabaseAdmin
-            const res = await getRows({
-                table: this.authTableName,
-                columns: `password, role, id, secret, user_id, is_active, disabled_at`,
+
+            // ---- not used anymore but kept for reference ----
+            // const res = await getRows({
+            //     table: this.authTableName,
+            //     columns: `password, role, id, secret, user_id, is_active, disabled_at, nuclei_id`,
+            //     bd: bd,
+            //     filters: [{ column: 'email', op: 'eq', value: email }],
+            //     single: true
+            // })
+
+            const res = await callRpc<AuthRespositoryUserDataByEmail[] | null>({
                 bd: bd,
-                filters: [{ column: 'email', op: 'eq', value: email }],
-                single: true
+                functionName: 'get_user_auth_data',
+                params: { email_param: email }
             })
 
             if (res) {
-                return res;
+                return (res.data as unknown as AuthRespositoryUserDataByEmail[])[0];
             }
 
             return null
@@ -75,7 +83,7 @@ export class AuthRepository {
                 table: this.authTableName,
                 data: { is_active: false, disabled_at: new Date().toISOString() },
                 where: [{ column: 'user_id', op: 'eq', value: user_id }],
-                authBd:bd,
+                authBd: bd,
             })
             if (!res.success) {
                 throw 'DISABLE_USER_ERROR';
@@ -100,7 +108,7 @@ export class AuthRepository {
                 table: this.authTableName,
                 data: { is_active: true, disabled_at: null },
                 where: [{ column: 'id', op: 'eq', value: auth_id }],
-                authBd:bd,
+                authBd: bd,
             })
             if (!res.success) {
                 throw 'RECOVER_USER_ERROR';
@@ -108,6 +116,30 @@ export class AuthRepository {
             return res.success;
         } catch (error) {
             console.error('AuthRepository.recoverAccount error:', error);
+            throw 'INTERNAL_SERVER_ERROR';
+        }
+    }
+
+    /**
+     * Update user password
+     * @param email String
+     * @param hashedPassword String
+     * @return boolean
+     * @throws 'INTERNAL_SERVER_ERROR'
+     */
+    static async updatePassword(email: string, hashedPassword: string): Promise<boolean> {
+        try {
+            const bd = supabaseAdmin
+            const res = await updateRow({
+                table: this.authTableName,
+                data: { password: hashedPassword },
+                where: [{ column: 'email', op: 'eq', value: email }],
+                authBd: bd,
+            })
+
+            return res.success
+        } catch (error) {
+            console.error('AuthRepository.updatePassword error:', error);
             throw 'INTERNAL_SERVER_ERROR';
         }
     }

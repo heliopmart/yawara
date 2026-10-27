@@ -4,7 +4,7 @@ import {Users} from '../user'
 // ------------ AUTH INTERFACES --------------
 // --------------------------------------------
 
-export type AuthRole = 'user' | 'admin' | 'leader' | 'nucleiLeader' | 'developer';
+export type AuthRole =  'GUEST' | 'MEMBER' | 'LEADER' | 'ADMIN' | 'DEVELOPER' | 'USER' | 'MODERATOR';
 
 export interface Auth {
     id: string;
@@ -35,9 +35,23 @@ export interface AuthServiceLoginCredentials {
 export interface AuthServiceRegistreCredentials {
     email: Auth['email'];
     name: Users['name'];
+    yearOfEntry: number;
     course: Users['course'];
     password: Auth['password'];
+    wpa_enabled: Users['wpa_enabled'];
+    wpa_subscription: Users['wpa_subscription'];
 }   
+
+export interface ResetPasswordCredentials {
+    email: Auth['email'];
+    password: Auth['password'];
+    hash: string;
+}
+
+export interface AuthLoginResponse{
+    token: string;
+    role: Auth['role'];
+}
 
 // ============== AUTH REPOSITORY =============
 
@@ -49,6 +63,7 @@ export interface AuthRespositoryUserDataByEmail {
     user_id: Auth['user_id'];
     is_active: Auth['is_active'];
     disabled_at: Auth['disabled_at'];
+    nuclei_id: string | null;
 }
 
 export interface AuthRespositoryInsertData {
@@ -67,8 +82,34 @@ export interface TokenPayload {
     role: Auth['role'];
     secret: Auth['secret'];
     supabaseToken?: string;
+    nuclei_id: string | null;
 }
 
 // --------------------------------------------
 // ----------- FRONTEND INTERFACES ------------
 // --------------------------------------------
+
+interface CourseGroup {
+  college: string;
+  courses: string[];
+}
+export interface AuthFormProps {
+  type: 'login' | 'register' | 'forgot';
+  title: string;
+  fields: {
+    name: string;
+    label: string;
+    type: string;
+    minLength?: number;
+    options?: string[] | CourseGroup[];
+  }[];
+  buttonText: string;
+  error: { message: string } | null;
+  onForgotPassword?: () => void;
+  onSubmit: (data: Record<string, string | boolean>) => void;
+}
+export interface AuthErrorRespose {
+  code: string;
+  path: string;
+  message: string;
+}

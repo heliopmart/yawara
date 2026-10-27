@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import styles from './selectionProcessLanding.module.scss';
 import { TimelineStep, FAQItem } from "@yawara/types"
-import { SP_LANDING_MOCK } from '@/mocks/spLanding.mock'; // Importando o novo mock
+import { SP_LANDING_MOCK } from '@/mocks/spLanding.mock'; 
 
 // --- Componentes Auxiliares ---
 
@@ -59,11 +59,8 @@ const FAQ: React.FC<{ faq: FAQItem[] }> = ({ faq }) => {
 };
 
 
-// --- Componente Principal ---
 const SelectionProcessLanding: React.FC = () => {
     const data = SP_LANDING_MOCK;
-
-    // Substitui os termos destacados (RNCBL)
     const renderDescription = (text: string, highlights: string[]) => {
         let content: React.ReactNode[] = [text];
         highlights.forEach(term => {
@@ -121,7 +118,7 @@ const SelectionProcessLanding: React.FC = () => {
                 <div className={styles.techContent}>
                     <div className={styles.techImageBlock}>
                         <Image
-                            src={''}
+                            src={'/images/castle-image-ps.png'}
                             alt='Image tec'
                             width={400}
                             height={300}
@@ -135,6 +132,7 @@ const SelectionProcessLanding: React.FC = () => {
                         <p className={styles.techDescription}>
                             {renderDescription(data.techBlock.description, data.techBlock.highlightedTerms)}
                         </p>
+                        <Link className={styles.techLink} href='/selection-process/score-predictor'>Entenda melhor a Y-SNA e faça um teste com seu histórico.</Link>
                     </div>
                 </div>
                 <div className={styles.techContent}>
@@ -146,7 +144,7 @@ const SelectionProcessLanding: React.FC = () => {
                     </div>
                     <div className={styles.techImageBlock}>
                         <Image
-                            src={''}
+                            src={'/images/forge-image-ps.png'}
                             alt='Image tec'
                             width={400}
                             height={300}

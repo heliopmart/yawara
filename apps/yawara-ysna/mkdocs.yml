@@ -1,0 +1,52 @@
+site_name: Yawara Y-SNA Documentation
+site_description: Documentação oficial do Yawara Y-SNA, um sistema avançado de análise e resolução neural.
+site_author: Team Yawara
+theme:
+  name: material
+  palette:
+    primary: dark red
+    accent: teal
+  features:
+    - navigation.sections
+    - content.code.copy
+
+extra:
+  favicon: assets/favicon.ico
+  
+extra_css:
+  - assets/style.css
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: ["."] # Aponta para a pasta do seu código fonte
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
+nav:
+  - Home: index.md
+  - Arquitetura: ARCHITECTURE.md
+  - Referência Técnica: 
+      - Pipeline de Seleção: reference/pipeline.md
+      - Engine V1 (Determinística): reference/engine_v1.md
+      - Engine V2 (Neural): reference/engine_v2.md
+      - Engine Canônica (NLP): reference/canonical_subject_engine.md
+      - Arquitetura Neural: 
+          - Encoder: reference/encoder.md
+          - Calibração: reference/calibration.md
+      - Relatórios & XAI: reference/reporting.md
+      - Ingestão de Dados: reference/ingestion.md
+      - Resolução Neural (Resolver): reference/neural_resolver.md
+      - Configurações: reference/config.md
+      - Utilitários: reference/utils.md
+  - Testes da API:
+    - Testes & QA: tests/tests.md

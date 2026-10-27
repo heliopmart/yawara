@@ -35,14 +35,14 @@ const SideNav: React.FC<SideNavProps> = ({ links, isOpen, onClose }) => {
         <ul className={styles.navList}>
           {links.map((link) => {
             const isActive = pathname.startsWith(link.href) && 
-                             (pathname === link.href || link.href !== '/account/processo-seletivo');
+                             (pathname === link.href || link.href !== '/in/selection-process');
 
             return (
               <li key={link.href} className={styles.navItem}>
                 <Link 
                   href={link.href} 
                   className={`${styles.navLink} ${isActive ? styles.active : ''}`}
-                  onClick={onClose} // Fecha o menu ao clicar no link
+                  onClick={onClose}
                 >
                   {link.label.toUpperCase()}
                 </Link>

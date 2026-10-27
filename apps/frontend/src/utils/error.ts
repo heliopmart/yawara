@@ -114,6 +114,70 @@ export const error_list = {
     'PS_SIGNUP_FAILED': {
         message: 'Falha ao inscrever-se no processo seletivo.',
         statusCode: 500,
+    },
+    'CERTIFICATE_CODE_MISSING': {
+        message: 'Código do certificado ausente.',
+        statusCode: 400,
+    },
+    'CERTIFICATE_NOT_FOUND': {
+        message: 'Certificado não encontrado.',
+        statusCode: 404,
+    },
+    'CERTIFICATES_NOT_FOUND': {
+        message: 'Nenhum certificado encontrado para o CPF fornecido.',
+        statusCode: 404,
+    },
+    'USER_DONT_HAVE_CERTIFICATES': {
+        message: 'O usuário não possui certificados.',
+        statusCode: 404,
+    },
+    'CPF_REQUIRED': {
+        message: 'CPF é obrigatório.',
+        statusCode: 400,
+    },
+    'CPF_INVALID': {
+        message: 'CPF inválido.',
+        statusCode: 400,
+    },
+    'MISSING_CERTIFICATE_ID': {
+        message: 'ID do certificado ausente.',
+        statusCode: 400,
+    },
+    'PS_EDITION_CREATION_FAILED': {
+        message: 'Falha ao criar a edição do processo seletivo.',
+        statusCode: 500,
+    },
+    'PS_USER_PRESENCE_UPDATE_FAILED': {
+        message: 'Falha ao atualizar a presença do usuário no processo seletivo.',
+        statusCode: 500,
+    },
+    'PS_USER_PRESENCE_NOT_FOUND': {
+        message: 'Presença do usuário no processo seletivo não encontrada.',
+        statusCode: 404,
+    },
+    'CERTIFICATE_NOT_CREATED': {
+        message: 'Falha ao emitir o certificado.',
+        statusCode: 500,
+    },
+    'RLS_UNAUTHENTICATED_ERROR': {
+        message: 'Operação não autorizada. Autenticação necessária falhou.',
+        statusCode: 401,
+    },
+    'CHALLENGE_DATA_NOT_FOUND': {
+        message: 'Dados do desafio não encontrados.',
+        statusCode: 404,
+    },
+    'NUCLEI_CONFIG_UPDATE_FAILED': {
+        message: 'Falha ao atualizar a configuração do núcleo.',
+        statusCode: 500,
+    },
+    'FORBIDDEN_ERROR': {
+        message: 'Acesso proibido.',
+        statusCode: 403,
+    },
+    'NUCLEI_FETCH_FAILED': {
+        message: 'Falha ao buscar núcleos.',
+        statusCode: 500,
     }
 }
 
@@ -138,4 +202,20 @@ export const handle_error = (error: unknown): ErrorDetail => {
     
     const detail = error_list['INTERNAL_SERVER_ERROR'];
     return { ...detail, code: 'INTERNAL_SERVER_ERROR' };
+}
+
+export interface ThrowErrorDetail {
+    message: string;
+    statusCode: number;
+    code?: ErrorCode | string;
+    
+    path: string;
+    originalError?: any;
+    
+    // Return what was expected
+    whatWaRight?: any;
+}
+
+export const handle_throw_error = (data: ThrowErrorDetail): string => {
+    return JSON.stringify(data);
 }

@@ -1,10 +1,14 @@
 import { AuthRepository } from '@/lib/repository/auth/auth.repository'
 import { UserRepository } from '@/lib/repository/user/user.repository'
 import { SessionService } from '@/lib/services/session/session.service'
-import { hashCreateSecretAuth } from '@/utils/hash'
+import { EmailService } from "@/lib/services/email/email.service"
+import { hashCreateSecretAuth, handleGenerateHash } from '@/utils/hash'
 import { verifyPasswordString, hashPasswordString } from '@/utils/hash'
-import { AuthServiceLoginCredentials, AuthServiceRegistreCredentials, TokenPayload } from '@yawara/types'
+import { AuthServiceLoginCredentials, AuthServiceRegistreCredentials, TokenPayload, AuthLoginResponse, ResetPasswordCredentials } from '@yawara/types'
 import { handle_verify_date } from '@/utils/handle_verify_date'
+
+
+
 export class authService {
 
     /*
@@ -19,9 +23,8 @@ export class authService {
      * @param credentials AuthServiceLoginCredentials
      * @return Token String
      */
-    static async login(credentials: AuthServiceLoginCredentials): Promise<string> {
+    static async login(credentials: AuthServiceLoginCredentials, token?: string): Promise<AuthLoginResponse> {
         const { email, password } = credentials;
-
         try {
             const userData = await AuthRepository.getUserByEmail(email);
 
@@ -29,6 +32,7 @@ export class authService {
                 throw 'USER_NOT_FOUND'
             }
 
+            // TODO: Talvez seja melhor comparar senha no banco de dados ( pesquisar se é mais seguro )
             if (!(await verifyPasswordString(password, userData.password))) {
                 throw 'INVALID_CREDENTIALS'
             }
@@ -47,7 +51,10 @@ export class authService {
                 throw 'INVALID_CREDENTIALS'
             }
 
-            return response_session_token
+            return {
+                token: response_session_token,
+                role: userData.role
+            }
         } catch (error) {
             console.error('authService.login error:', error);
             throw error;
@@ -77,6 +84,9 @@ export class authService {
             const user_create_response = await UserRepository.insertUser({
                 name: credentials.name,
                 course: credentials.course,
+                wpa_enabled: credentials.wpa_enabled,
+                wpa_subscription: credentials.wpa_subscription,
+                semester: await this.convertYearOfEntryToSemester(credentials.yearOfEntry),
             });
 
             if (!user_create_response) {
@@ -86,7 +96,7 @@ export class authService {
             const auth_create_response = await AuthRepository.insertAuthUser({
                 email: credentials.email,
                 password: await hashPasswordString(credentials.password),
-                role: 'user',
+                role: 'USER',
                 user_id: user_create_response,
                 secret: await hashCreateSecretAuth(),
                 permission: 0
@@ -188,16 +198,117 @@ export class authService {
     }
 
     /**
+     * Reset user password
+     * @param data ResetPasswordData
+     * @return boolean
+     * @throws 'INTERNAL_SERVER_ERROR' | 'INVALID_HASH'
+     */
+    static async resetPassword(data: ResetPasswordCredentials): Promise<boolean> {
+        try {
+            const hash = await this.createHashForPasswordReset(data.email);
+            if( hash !== data.hash) {
+                throw 'INVALID_HASH'
+            }
+
+            const res = await AuthRepository.updatePassword(data.email, await hashPasswordString(data.password));
+            return res;
+        } catch (error) {
+            console.error('authService.resetPassword error:', error);
+            throw error;
+        }
+    }
+
+    /**
      * Recover user account
      * @param auth_id String
      * @throws 'INTERNAL_SERVER_ERROR' | 'RECOVER_USER_ERROR'
      */
-    static async recoverAccount(auth_id: string) {
+    static async recoverAccount(auth_id: string): Promise<boolean> {
         try {
-            await AuthRepository.recoverAccount(auth_id);
+            const res = await AuthRepository.recoverAccount(auth_id);
+            return res;
         } catch (error) {
             console.error('authService.recoverAccount error:', error);
             throw error;
         }
+    }
+
+
+    /*
+      =========================================================
+      ======================== HANDLE =========================
+      =========================================================
+    */
+
+    /**
+     * Send password reset verification email
+     * @param email string
+     * @return boolean
+     * @throws 'USER_NOT_FOUND' | 'INTERNAL_SERVER_ERROR'
+     */
+    static async sendPasswordResetVerification(email: string): Promise<boolean> {
+        try {
+            const hash = await this.createHashForPasswordReset(email);
+            const resetLink = `${process.env.NEXT_PUBLIC_APP_URL}/forgot-password?hash=${hash}`;
+
+            await new EmailService().sendPasswordResetEmail(email, resetLink);
+            return true;
+        } catch (error) {
+            console.error('authService.sendPasswordResetVerification error:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Create hash for password reset
+     * @param email string
+     * @return string
+     * @throws 'USER_NOT_FOUND' | 'INTERNAL_SERVER_ERROR'
+     */
+    private static async createHashForPasswordReset(email: string): Promise<string> {
+        try {
+            const userData = await AuthRepository.getUserByEmail(email);
+            if (!userData?.id || userData.is_active === false) {
+                throw 'USER_NOT_FOUND'
+            }
+
+            const hash = await handleGenerateHash(`${userData.id}-${userData.password}`);
+            return hash;
+        }catch (error) {
+            console.error('authService.createHashForPasswordReset error:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Auto login verify
+     * @param token Session token
+     * @return boolean
+     */
+    static async auto_login_verify(token: string | null): Promise<boolean> {
+        if (!token) {
+            return false;
+        }
+
+        try {
+            const isValid = await authService.verifySession(token);
+            return isValid;
+        } catch (error) {
+            console.error('authService.auto_login_verify error:', error);
+            return false;
+        }
+    }
+
+    /**
+     * Convert year of entry to semester
+     * @param yearOfEntry number
+     * @return number
+     */
+    static async convertYearOfEntryToSemester(yearOfEntry: number): Promise<number> {
+        const currentYear = new Date().getFullYear();
+        const currentMonth = new Date().getMonth() + 1;
+        const yearDiff = currentYear - yearOfEntry;
+        const semester = yearDiff * 2 + (currentMonth <= 6 ? 1 : 2);
+        return semester
     }
 }
